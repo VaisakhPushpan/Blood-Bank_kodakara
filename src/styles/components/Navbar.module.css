@@ -39,6 +39,13 @@
   color: var(--primary);
 }
 
+.profileLink {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--primary) !important;
+}
+
 .actions {
   display: flex;
   align-items: center;

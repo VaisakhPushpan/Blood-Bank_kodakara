@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useLanguage } from '../../context/LanguageContext';
 import { useAuth } from '../../context/AuthContext';
 import { translations } from '../../utils/translations';
-import { Languages, LogIn, LogOut, Heart } from 'lucide-react';
+import { Languages, LogIn, LogOut, Heart, User } from 'lucide-react';
 import styles from '../../styles/components/Navbar.module.css';
 
 const Navbar = () => {
@@ -21,7 +21,14 @@ const Navbar = () => {
 
         <div className={styles.links}>
           <Link to="/find">{t.nav.find}</Link>
-          <Link to="/register">{t.nav.register}</Link>
+          {user ? (
+            <Link to="/profile" className={styles.profileLink}>
+              <User size={18} />
+              {lang === 'ml' ? 'പ്രൊഫൈൽ' : 'Profile'}
+            </Link>
+          ) : (
+            <Link to="/register">{t.nav.register}</Link>
+          )}
         </div>
 
         <div className={styles.actions}>
