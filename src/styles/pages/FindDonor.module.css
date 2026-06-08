@@ -93,19 +93,21 @@
 
 .actions {
   display: flex;
-  gap: 0.8rem;
+  gap: 0.5rem;
+  flex-wrap: wrap;
 }
 
 .callBtn, .whatsappBtn {
-  flex: 1;
+  flex: 1 1 120px; /* Allow buttons to wrap if necessary */
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
-  padding: 0.7rem;
+  gap: 0.4rem;
+  padding: 0.7rem 0.5rem;
   border-radius: 6px;
   font-weight: bold;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
+  white-space: nowrap;
 }
 
 .callBtn {

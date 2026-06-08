@@ -84,7 +84,7 @@ const Register = () => {
           <p style={{margin: '1rem 0'}}>
             {lang === 'ml' ? 'നിങ്ങളുടെ വിവരങ്ങൾ മാറ്റാൻ പ്രൊഫൈലിൽ പോകുക.' : 'Go to your profile to edit your details.'}
           </p>
-          <Link to="/profile" className={styles.submitBtn} style={{display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' , color : 'red'}}>
+          <Link to="/profile" className={styles.submitBtn} style={{display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem'}}>
             {lang === 'ml' ? 'പ്രൊഫൈലിലേക്ക് പോകുക' : 'Go to Profile'}
             <ArrowRight size={20} />
           </Link>
