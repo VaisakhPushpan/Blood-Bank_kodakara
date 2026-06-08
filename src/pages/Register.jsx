@@ -98,9 +98,10 @@ const Register = () => {
       <div className={`${styles.register} container`}>
         <div className={styles.loginPrompt}>
           <h2>{t.form.title}</h2>
-          <p>{t.common.loginWithGoogle}</p>
+          <p>{lang === 'ml' ? 'തുടരുന്നതിന് ലോഗിൻ ചെയ്യുക' : 'Please login to continue'}</p>
           <button onClick={loginWithGoogle} className={styles.googleBtn}>
-            {t.common.loginWithGoogle}
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" width="18" />
+            <span>{t.common.loginWithGoogle}</span>
           </button>
         </div>
       </div>
