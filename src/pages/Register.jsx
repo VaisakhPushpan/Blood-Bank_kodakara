@@ -140,10 +140,11 @@ const Register = () => {
         </div>
 
         <div className={styles.field}>
-          <label>{t.form.address}</label>
-          <textarea 
-            name="address" 
-            value={formData.address} 
+          <label>{t.form.location}</label>
+          <input 
+            type="text" 
+            name="location" 
+            value={formData.location} 
             onChange={handleChange} 
             required 
           />

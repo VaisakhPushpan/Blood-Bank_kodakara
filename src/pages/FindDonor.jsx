@@ -88,9 +88,10 @@ const FindDonor = () => {
                   <h3>{donor.name}</h3>
                   <span className={styles.badge}>{donor.bloodGroup}</span>
                 </div>
-                <p className={styles.address}>{donor.address}</p>
+                <p className={styles.address}>{donor.location}</p>
 
                 <div className={`${styles.availability} ${availability.available ? styles.available : styles.cooldown}`}>
+
                   {availability.available ? (
                     <>
                       <CheckCircle2 size={16} />
