@@ -151,6 +151,16 @@ const Register = () => {
         </div>
 
         <div className={styles.field}>
+          <label>{t.form.address}</label>
+          <textarea 
+            name="address" 
+            value={formData.address} 
+            onChange={handleChange} 
+            required 
+          />
+        </div>
+
+        <div className={styles.field}>
           <label>{t.form.phone}</label>
           <input 
             type="tel" 

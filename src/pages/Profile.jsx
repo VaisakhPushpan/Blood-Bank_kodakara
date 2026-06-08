@@ -133,6 +133,16 @@ const Profile = () => {
         </div>
 
         <div className={styles.field}>
+          <label><MapPin size={16} /> {t.form.address}</label>
+          <textarea 
+            name="address" 
+            value={formData.address || ''} 
+            onChange={handleChange} 
+            required 
+          />
+        </div>
+
+        <div className={styles.field}>
           <label><Phone size={16} /> {t.form.phone}</label>
           <input 
             type="tel" 
