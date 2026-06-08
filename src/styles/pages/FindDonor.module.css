@@ -49,6 +49,27 @@
   border-color: var(--primary);
 }
 
+.availability {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 1.25rem;
+  padding: 0.5rem;
+  border-radius: 6px;
+}
+
+.available {
+  background-color: #dcfce7;
+  color: #15803d;
+}
+
+.cooldown {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
 .cardHeader {
   display: flex;
   justify-content: space-between;

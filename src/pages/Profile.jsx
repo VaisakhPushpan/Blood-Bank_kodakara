@@ -18,6 +18,7 @@ const Profile = () => {
     address: '',
     phone: '',
     whatsapp: '',
+    lastDonationDate: '',
   });
 
   const [status, setStatus] = useState({ type: '', message: '' });
@@ -149,6 +150,16 @@ const Profile = () => {
             value={formData.whatsapp} 
             onChange={handleChange} 
             required 
+          />
+        </div>
+
+        <div className={styles.field}>
+          <label>📅 {t.form.lastDonation}</label>
+          <input 
+            type="date" 
+            name="lastDonationDate" 
+            value={formData.lastDonationDate || ''} 
+            onChange={handleChange} 
           />
         </div>
 

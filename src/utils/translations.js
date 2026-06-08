@@ -36,6 +36,12 @@ export const translations = {
       submit: "രജിസ്റ്റർ ചെയ്യുക",
       success: "വിജയകരമായി രജിസ്റ്റർ ചെയ്തു!",
       error: "ഒരു പിശക് സംഭവിച്ചു. വീണ്ടും ശ്രമിക്കുക.",
+      lastDonation: "അവസാനം രക്തം നൽകിയ തീയതി (ഉണ്ടെങ്കിൽ)",
+      availability: {
+        available: "ലഭ്യമാണ്",
+        onCooldown: "ലഭ്യമല്ല (വിശ്രമത്തിൽ)",
+        daysRemaining: "{days} ദിവസത്തിന് ശേഷം ലഭ്യമാകും",
+      }
     },
     find: {
       title: "രക്തദാതാക്കളെ കണ്ടെത്തുക",
@@ -86,6 +92,12 @@ export const translations = {
       submit: "Register Now",
       success: "Registered Successfully!",
       error: "Something went wrong. Please try again.",
+      lastDonation: "Last Donation Date (if any)",
+      availability: {
+        available: "Available",
+        onCooldown: "Not Available (Resting)",
+        daysRemaining: "Available in {days} days",
+      }
     },
     find: {
       title: "Find Blood Donors",
