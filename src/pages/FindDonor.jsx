@@ -11,6 +11,8 @@ const FindDonor = () => {
   const t = translations[lang];
 
   const [selectedGroup, setSelectedGroup] = useState('');
+  const [selectedLocation, setSelectedLocation] = useState('');
+  const [showOnlyAvailable, setShowOnlyAvailable] = useState(false);
   const [donors, setDonors] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -22,7 +24,7 @@ const FindDonor = () => {
 
   const fetchDonors = async () => {
     setLoading(true);
-    setDonors([]); // Clear old results
+    setDonors([]);
     try {
       const q = query(
         collection(db, 'donors'),
@@ -40,47 +42,66 @@ const FindDonor = () => {
     setLoading(false);
   };
 
+  const getUniqueLocations = () => {
+    return [...new Set(donors.map(d => d.location))];
+  };
+
   const checkAvailability = (lastDate) => {
     if (!lastDate) return { available: true };
-    
     const last = new Date(lastDate);
     const now = new Date();
     const diffTime = Math.abs(now - last);
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
-    const COOLDOWN_DAYS = 90; // 3 months
-    
+    const COOLDOWN_DAYS = 90;
+
     if (diffDays >= COOLDOWN_DAYS) {
       return { available: true };
     } else {
-      return { 
-        available: false, 
-        daysRemaining: COOLDOWN_DAYS - diffDays 
-      };
+      return { available: false, daysRemaining: COOLDOWN_DAYS - diffDays };
     }
   };
+
+  const filteredDonors = donors.filter(donor => {
+    const availability = checkAvailability(donor.lastDonationDate);
+    const matchesLocation = selectedLocation === '' || donor.location === selectedLocation;
+    const matchesAvailability = !showOnlyAvailable || availability.available;
+    return matchesLocation && matchesAvailability;
+  });
 
   return (
     <div className={`${styles.findDonor} container`}>
       <h2>{t.find.title}</h2>
-      
-      <div className={styles.filter}>
-        <select 
-          value={selectedGroup} 
-          onChange={(e) => setSelectedGroup(e.target.value)}
-        >
-          <option value="">{t.find.placeholder}</option>
-          {bloodGroups.map(bg => (
-            <option key={bg} value={bg}>{bg}</option>
-          ))}
+
+      <div className={styles.filterGroup}>
+        <select value={selectedGroup} onChange={(e) => setSelectedGroup(e.target.value)}>
+          <option value="">{lang === 'ml' ? 'രക്തഗ്രൂപ്പ് തിരഞ്ഞെടുക്കുക' : 'Select Blood Group'}</option>
+          {bloodGroups.map(bg => <option key={bg} value={bg}>{bg}</option>)}
         </select>
+
+        {donors.length > 0 && (
+          <>
+            <select value={selectedLocation} onChange={(e) => setSelectedLocation(e.target.value)}>
+              <option value="">{lang === 'ml' ? 'സ്ഥലം തിരഞ്ഞെടുക്കുക' : 'Select Location'}</option>
+              {getUniqueLocations().map(loc => <option key={loc} value={loc}>{loc}</option>)}
+            </select>
+
+            <label className={styles.checkbox}>
+              <input 
+                type="checkbox" 
+                checked={showOnlyAvailable} 
+                onChange={(e) => setShowOnlyAvailable(e.target.checked)} 
+              />
+              {lang === 'ml' ? 'ലഭ്യമായവരെ മാത്രം കാണിക്കുക' : 'Show Available Only'}
+            </label>
+          </>
+        )}
       </div>
 
       <div className={styles.results}>
         {loading ? (
           <p>{t.common.loading}</p>
-        ) : donors.length > 0 ? (
-          donors.map((donor, idx) => {
+        ) : filteredDonors.length > 0 ? (
+          filteredDonors.map((donor, idx) => {
             const availability = checkAvailability(donor.lastDonationDate);
             return (
               <div key={idx} className={styles.card}>
@@ -91,7 +112,6 @@ const FindDonor = () => {
                 <p className={styles.address}>{donor.location}</p>
 
                 <div className={`${styles.availability} ${availability.available ? styles.available : styles.cooldown}`}>
-
                   {availability.available ? (
                     <>
                       <CheckCircle2 size={16} />
@@ -106,7 +126,7 @@ const FindDonor = () => {
                     </>
                   )}
                 </div>
-                
+
                 <div className={styles.actions}>
                   <a href={`tel:${donor.phone}`} className={styles.callBtn}>
                     <Phone size={18} />
@@ -131,6 +151,7 @@ const FindDonor = () => {
       </div>
     </div>
   );
+
 };
 
 export default FindDonor;

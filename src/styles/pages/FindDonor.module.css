@@ -18,15 +18,32 @@
   margin-bottom: 4rem;
 }
 
-.filter select {
-  padding: 1rem 2rem;
-  font-size: 1.1rem;
+.filterGroup {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 3rem;
+  align-items: center;
+}
+
+.filterGroup select {
+  padding: 0.8rem 1.5rem;
+  font-size: 1rem;
   border: 2px solid var(--primary);
   border-radius: var(--border-radius);
   background-color: var(--white);
   color: var(--text);
-  font-weight: 700;
+  font-weight: 600;
   box-shadow: var(--shadow);
+}
+
+.checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  cursor: pointer;
 }
 
 .results {
