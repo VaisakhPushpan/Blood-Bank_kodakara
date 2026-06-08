@@ -11,6 +11,16 @@ const Navbar = () => {
   const { user, loginWithGoogle, logout } = useAuth();
   const t = translations[lang];
 
+  const handleLogout = () => {
+    const confirmLogout = window.confirm(
+      lang === 'ml' ? 'നിങ്ങൾക്ക് ലോഗൗട്ട് ചെയ്യണോ?' : 'Are you sure you want to logout?'
+    );
+    if (confirmLogout) {
+      logout();
+      window.location.href = '/'; 
+    }
+  };
+
   return (
     <nav className={styles.nav}>
       <div className={`${styles.navContent} container`}>
@@ -38,7 +48,7 @@ const Navbar = () => {
           </button>
 
           {user ? (
-            <button onClick={logout} className={styles.iconBtn} aria-label="Logout">
+            <button onClick={handleLogout} className={styles.iconBtn} aria-label="Logout">
               <LogOut size={20} />
             </button>
           ) : (
