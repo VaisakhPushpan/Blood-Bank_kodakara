@@ -143,6 +143,15 @@ const Profile = () => {
         </div>
 
         <div className={styles.field}>
+          <label>💊 {t.form.medicalConditions}</label>
+          <textarea 
+            name="medicalConditions" 
+            value={formData.medicalConditions || ''} 
+            onChange={handleChange} 
+          />
+        </div>
+
+        <div className={styles.field}>
           <label><Phone size={16} /> {t.form.phone}</label>
           <input 
             type="tel" 

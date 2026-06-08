@@ -161,6 +161,15 @@ const Register = () => {
         </div>
 
         <div className={styles.field}>
+          <label>{t.form.medicalConditions}</label>
+          <textarea 
+            name="medicalConditions" 
+            value={formData.medicalConditions || ''} 
+            onChange={handleChange} 
+          />
+        </div>
+
+        <div className={styles.field}>
           <label>{t.form.phone}</label>
           <input 
             type="tel" 
