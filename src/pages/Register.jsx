@@ -162,11 +162,15 @@ const Register = () => {
 
         <div className={styles.field}>
           <label>{t.form.medicalConditions}</label>
-          <textarea 
-            name="medicalConditions" 
-            value={formData.medicalConditions || ''} 
-            onChange={handleChange} 
-          />
+          <select 
+            name="hasMedicalConditions" 
+            value={formData.hasMedicalConditions || 'no'} 
+            onChange={handleChange}
+            required
+          >
+            <option value="no">{t.form.no}</option>
+            <option value="yes">{t.form.yes}</option>
+          </select>
         </div>
 
         <div className={styles.field}>

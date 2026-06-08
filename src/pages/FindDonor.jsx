@@ -46,7 +46,10 @@ const FindDonor = () => {
     return [...new Set(donors.map(d => d.location))];
   };
 
-  const checkAvailability = (lastDate) => {
+  const checkAvailability = (lastDate, hasMedicalConditions) => {
+    // If they have medical conditions, they are not available
+    if (hasMedicalConditions === 'yes') return { available: false, isMedical: true };
+    
     if (!lastDate) return { available: true };
     const last = new Date(lastDate);
     const now = new Date();
@@ -102,7 +105,7 @@ const FindDonor = () => {
           <p>{t.common.loading}</p>
         ) : filteredDonors.length > 0 ? (
           filteredDonors.map((donor, idx) => {
-            const availability = checkAvailability(donor.lastDonationDate);
+            const availability = checkAvailability(donor.lastDonationDate, donor.hasMedicalConditions);
             return (
               <div key={idx} className={styles.card}>
                 <div className={styles.cardHeader}>
@@ -121,7 +124,7 @@ const FindDonor = () => {
                     <>
                       <Clock size={16} />
                       <span>
-                        {t.form.availability.onCooldown} - {t.form.availability.daysRemaining.replace('{days}', availability.daysRemaining)}
+                        {availability.isMedical ? (lang === 'ml' ? 'ആരോഗ്യപരമായ കാരണങ്ങളാൽ ലഭ്യല്ല' : 'Not available due to medical reasons') : `${t.form.availability.onCooldown} - ${t.form.availability.daysRemaining.replace('{days}', availability.daysRemaining)}`}
                       </span>
                     </>
                   )}
