@@ -4,12 +4,12 @@ import { getFirestore } from "firebase/firestore";
 
 // TODO: Replace with your actual Firebase config from the console
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_AUTH_DOMAIN",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_STORAGE_BUCKET",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID"
+    apiKey: "AIzaSyDNBnxwodqXK3PRl5lwTt1KuOAYps9uBMg",
+    authDomain: "blood-bank-kodakara.firebaseapp.com",
+    projectId: "blood-bank-kodakara",
+    storageBucket: "blood-bank-kodakara.firebasestorage.app",
+    messagingSenderId: "444806052816",
+    appId: "1:444806052816:web:87ff699c4e32fa8316d7d5"
 };
 
 const app = initializeApp(firebaseConfig);
