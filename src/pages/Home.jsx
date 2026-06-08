@@ -1,17 +1,36 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
+import { useAuth } from '../context/AuthContext';
 import { translations } from '../utils/translations';
 import styles from '../styles/pages/Home.module.css';
-import { Search, UserPlus, Heart, PhoneCall, CheckCircle } from 'lucide-react';
+import { Search, UserPlus, Heart, PhoneCall, CheckCircle, AlertCircle } from 'lucide-react';
 
 const Home = () => {
   const { lang } = useLanguage();
+  const { user, isDonor } = useAuth();
   const t = translations[lang];
   const navigate = useNavigate();
 
   return (
     <div className={styles.home}>
+      {user && !isDonor && (
+        <div className={styles.alert}>
+          <div className="container">
+            <div className={styles.alertContent}>
+              <AlertCircle size={20} />
+              <span>
+                {lang === 'ml' 
+                  ? 'ദാതാവായി രജിസ്റ്റർ ചെയ്യാൻ ഇവിടെ ക്ലിക്ക് ചെയ്യുക' 
+                  : 'You are not registered as a donor yet. Register now!'}
+              </span>
+              <button onClick={() => navigate('/register')}>
+                {lang === 'ml' ? 'രജിസ്റ്റർ ചെയ്യുക' : 'Register'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <header className={styles.hero}>
         <div className="container">
           <div className={styles.heroContent}>

@@ -22,6 +22,7 @@ const Profile = () => {
 
   const [status, setStatus] = useState({ type: '', message: '' });
   const [loading, setLoading] = useState(true);
+  const [isNewDonor, setIsNewDonor] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -35,8 +36,10 @@ const Profile = () => {
       const docSnap = await getDoc(docRef);
       if (docSnap.exists()) {
         setFormData(docSnap.data());
+        setIsNewDonor(false);
       } else {
         setFormData(prev => ({ ...prev, name: user.displayName || '' }));
+        setIsNewDonor(true);
       }
     } catch (error) {
       console.error("Error fetching profile:", error);
@@ -72,7 +75,24 @@ const Profile = () => {
   return (
     <div className={`${styles.register} container`}>
       <form onSubmit={handleSubmit} className={styles.form}>
-        <h2>{lang === 'ml' ? 'പ്രൊഫൈൽ എഡിറ്റ് ചെയ്യുക' : 'Edit Profile'}</h2>
+        <h2>{lang === 'ml' ? 'പ്രൊഫൈൽ' : 'Profile'}</h2>
+        
+        {isNewDonor && (
+          <div style={{
+            backgroundColor: 'var(--primary-light)', 
+            padding: '1rem', 
+            borderRadius: '8px', 
+            marginBottom: '1.5rem',
+            fontSize: '0.9rem',
+            color: 'var(--primary)',
+            fontWeight: '600',
+            textAlign: 'center'
+          }}>
+            {lang === 'ml' 
+              ? 'നിങ്ങൾ ദാതാവായി രജിസ്റ്റർ ചെയ്തിട്ടില്ല. ദയവായി വിവരങ്ങൾ നൽകുക.' 
+              : 'You are not registered as a donor yet. Please provide your details.'}
+          </div>
+        )}
         
         <div className={styles.field}>
           <label><User size={16} /> {t.form.name}</label>

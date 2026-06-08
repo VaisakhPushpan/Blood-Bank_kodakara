@@ -1,15 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { translations, bloodGroups } from '../utils/translations';
 import { db } from '../firebase/config';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { useNavigate, Link } from 'react-router-dom';
 import styles from '../styles/pages/Register.module.css';
+import { CheckCircle, ArrowRight } from 'lucide-react';
 
 const Register = () => {
   const { user, loginWithGoogle } = useAuth();
   const { lang } = useLanguage();
   const t = translations[lang];
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     name: user?.displayName || '',
@@ -20,6 +23,29 @@ const Register = () => {
   });
 
   const [status, setStatus] = useState({ type: '', message: '' });
+  const [isAlreadyDonor, setIsAlreadyDonor] = useState(false);
+  const [checking, setChecking] = useState(true);
+
+  useEffect(() => {
+    if (user) {
+      checkDonorStatus();
+    } else {
+      setChecking(false);
+    }
+  }, [user]);
+
+  const checkDonorStatus = async () => {
+    try {
+      const docRef = doc(db, 'donors', user.uid);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        setIsAlreadyDonor(true);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+    setChecking(false);
+  };
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -44,6 +70,28 @@ const Register = () => {
       setStatus({ type: 'error', message: t.form.error });
     }
   };
+
+  if (checking) return <div className="container"><p>{t.common.loading}</p></div>;
+
+  if (isAlreadyDonor) {
+    return (
+      <div className={`${styles.register} container`}>
+        <div className={styles.loginPrompt}>
+          <CheckCircle size={60} color="var(--success)" />
+          <h2 style={{marginTop: '1rem'}}>
+            {lang === 'ml' ? 'നിങ്ങൾ ഇതിനകം രജിസ്റ്റർ ചെയ്തിട്ടുണ്ട്' : 'You are already registered'}
+          </h2>
+          <p style={{margin: '1rem 0'}}>
+            {lang === 'ml' ? 'നിങ്ങളുടെ വിവരങ്ങൾ മാറ്റാൻ പ്രൊഫൈലിൽ പോകുക.' : 'Go to your profile to edit your details.'}
+          </p>
+          <Link to="/profile" className={styles.submitBtn} style={{display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem'}}>
+            {lang === 'ml' ? 'പ്രൊഫൈലിലേക്ക് പോകുക' : 'Go to Profile'}
+            <ArrowRight size={20} />
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   if (!user) {
     return (
