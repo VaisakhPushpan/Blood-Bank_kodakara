@@ -49,6 +49,11 @@ button:active {
   transform: scale(0.96);
 }
 
+input, select, textarea {
+  color: #1a1a1a !important;
+  background-color: #ffffff !important;
+}
+
 .container {
   width: 100%;
   max-width: 1100px;

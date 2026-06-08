@@ -22,6 +22,7 @@ const FindDonor = () => {
 
   const fetchDonors = async () => {
     setLoading(true);
+    setDonors([]); // Clear old results
     try {
       const q = query(
         collection(db, 'donors'),
@@ -30,11 +31,12 @@ const FindDonor = () => {
       const querySnapshot = await getDocs(q);
       const results = [];
       querySnapshot.forEach((doc) => {
-        results.push(doc.data());
+        results.push({ id: doc.id, ...doc.data() });
       });
       setDonors(results);
     } catch (error) {
-      console.error(error);
+      console.error("Error fetching donors:", error);
+      // You could set an error state here to show a message to the user
     }
     setLoading(false);
   };
