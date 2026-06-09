@@ -7,6 +7,7 @@ import Home from './pages/Home';
 import Register from './pages/Register';
 import FindDonor from './pages/FindDonor';
 import Profile from './pages/Profile';
+import Admin from './pages/Admin';
 import './styles/global.css';
 
 function App() {
@@ -21,6 +22,7 @@ function App() {
               <Route path="/register" element={<Register />} />
               <Route path="/find" element={<FindDonor />} />
               <Route path="/profile" element={<Profile />} />
+              <Route path="/admin" element={<Admin />} />
             </Routes>
           </main>
         </Router>

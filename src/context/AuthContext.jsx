@@ -9,16 +9,23 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isDonor, setIsDonor] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
       if (currentUser) {
-        const docSnap = await getDoc(doc(db, 'donors', currentUser.uid));
-        setIsDonor(docSnap.exists());
+        // Check donor status
+        const donorSnap = await getDoc(doc(db, 'donors', currentUser.uid));
+        setIsDonor(donorSnap.exists());
+        
+        // Check admin status
+        const adminSnap = await getDoc(doc(db, 'admins', currentUser.uid));
+        setIsAdmin(adminSnap.exists());
       } else {
         setIsDonor(false);
+        setIsAdmin(false);
       }
       setLoading(false);
     });
@@ -28,8 +35,11 @@ export const AuthProvider = ({ children }) => {
   const loginWithGoogle = async () => {
     try {
       const result = await signInWithPopup(auth, googleProvider);
-      const docSnap = await getDoc(doc(db, 'donors', result.user.uid));
-      setIsDonor(docSnap.exists());
+      const donorSnap = await getDoc(doc(db, 'donors', result.user.uid));
+      setIsDonor(donorSnap.exists());
+      
+      const adminSnap = await getDoc(doc(db, 'admins', result.user.uid));
+      setIsAdmin(adminSnap.exists());
     } catch (error) {
       console.error("Login failed", error);
     }
@@ -38,7 +48,7 @@ export const AuthProvider = ({ children }) => {
   const logout = () => signOut(auth);
 
   return (
-    <AuthContext.Provider value={{ user, isDonor, loading, loginWithGoogle, logout }}>
+    <AuthContext.Provider value={{ user, isDonor, isAdmin, loading, loginWithGoogle, logout }}>
       {!loading && children}
     </AuthContext.Provider>
   );

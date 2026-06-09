@@ -3,12 +3,12 @@ import { Link } from 'react-router-dom';
 import { useLanguage } from '../../context/LanguageContext';
 import { useAuth } from '../../context/AuthContext';
 import { translations } from '../../utils/translations';
-import { Languages, LogIn, LogOut, Heart, User } from 'lucide-react';
+import { Languages, LogIn, LogOut, Heart, User, Shield } from 'lucide-react';
 import styles from '../../styles/components/Navbar.module.css';
 
 const Navbar = () => {
   const { lang, toggleLanguage } = useLanguage();
-  const { user, loginWithGoogle, logout } = useAuth();
+  const { user, isAdmin, loginWithGoogle, logout } = useAuth();
   const t = translations[lang];
 
   const handleLogout = () => {
@@ -31,6 +31,12 @@ const Navbar = () => {
 
         <div className={styles.links}>
           <Link to="/find">{t.nav.find}</Link>
+          {isAdmin && (
+            <Link to="/admin" className={styles.adminLink}>
+              <Shield size={18} />
+              {lang === 'ml' ? 'അഡ്മിൻ' : 'Admin'}
+            </Link>
+          )}
           {user ? (
             <Link to="/profile" className={styles.profileLink}>
               <User size={18} />

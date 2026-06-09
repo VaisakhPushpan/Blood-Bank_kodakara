@@ -1,0 +1,104 @@
+.profile {
+  max-width: 600px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+.historySection {
+  margin-top: 3rem;
+  padding: 1.5rem;
+  background: #f9fafb;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+}
+
+.historySection h3 {
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #111827;
+}
+
+.addHistoryForm {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  align-items: flex-end;
+}
+
+@media (max-width: 640px) {
+  .addHistoryForm {
+    grid-template-columns: 1fr;
+  }
+}
+
+.addHistoryForm div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.addHistoryForm label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #4b5563;
+}
+
+.addHistoryForm input {
+  padding: 0.6rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+.addBtn {
+  background: #dc2626;
+  color: white;
+  border: none;
+  padding: 0.6rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 600;
+  height: 38px;
+}
+
+.historyList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.historyItem {
+  background: white;
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.historyInfo h4 {
+  margin: 0;
+  font-size: 1rem;
+  color: #111827;
+}
+
+.historyInfo p {
+  margin: 0.2rem 0 0 0;
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+.noHistory {
+  text-align: center;
+  color: #6b7280;
+  font-style: italic;
+  padding: 1rem;
+}

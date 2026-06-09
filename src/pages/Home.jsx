@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { translations } from '../utils/translations';
 import styles from '../styles/pages/Home.module.css';
 import { Search, UserPlus, Heart, PhoneCall, CheckCircle, AlertCircle } from 'lucide-react';
+import UrgentAlerts from '../components/UrgentAlerts/UrgentAlerts';
 
 const Home = () => {
   const { lang } = useLanguage();
@@ -57,6 +58,8 @@ const Home = () => {
           </div>
         </div>
       </header>
+
+      <UrgentAlerts />
 
       <section className={styles.howItWorks}>
         <div className="container">

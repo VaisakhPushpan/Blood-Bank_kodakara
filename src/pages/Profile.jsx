@@ -3,9 +3,10 @@ import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { translations, bloodGroups } from '../utils/translations';
 import { db } from '../firebase/config';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
-import styles from '../styles/pages/Register.module.css'; // Reusing Register styles
-import { User, MapPin, Phone, MessageCircle, Save } from 'lucide-react';
+import { doc, getDoc, setDoc, collection, addDoc, query, where, orderBy, getDocs } from 'firebase/firestore';
+import registerStyles from '../styles/pages/Register.module.css';
+import profileStyles from '../styles/pages/Profile.module.css';
+import { User, MapPin, Phone, MessageCircle, Save, History, Plus } from 'lucide-react';
 
 const Profile = () => {
   const { user } = useAuth();
@@ -15,12 +16,16 @@ const Profile = () => {
   const [formData, setFormData] = useState({
     name: '',
     bloodGroup: '',
+    location: '',
     address: '',
     phone: '',
     whatsapp: '',
     lastDonationDate: '',
+    hasMedicalConditions: 'no'
   });
 
+  const [history, setHistory] = useState([]);
+  const [newDonation, setNewDonation] = useState({ date: '', hospital: '' });
   const [status, setStatus] = useState({ type: '', message: '' });
   const [loading, setLoading] = useState(true);
   const [isNewDonor, setIsNewDonor] = useState(false);
@@ -28,6 +33,7 @@ const Profile = () => {
   useEffect(() => {
     if (user) {
       fetchProfile();
+      fetchHistory();
     }
   }, [user]);
 
@@ -36,7 +42,7 @@ const Profile = () => {
       const docRef = doc(db, 'donors', user.uid);
       const docSnap = await getDoc(docRef);
       if (docSnap.exists()) {
-        setFormData(docSnap.data());
+        setFormData(prev => ({ ...prev, ...docSnap.data() }));
         setIsNewDonor(false);
       } else {
         setFormData(prev => ({ ...prev, name: user.displayName || '' }));
@@ -45,11 +51,64 @@ const Profile = () => {
     } catch (error) {
       console.error("Error fetching profile:", error);
     }
-    setLoading(false);
+  };
+
+  const fetchHistory = async () => {
+    try {
+      const q = query(
+        collection(db, 'donations'),
+        where('userId', '==', user.uid),
+        orderBy('date', 'desc')
+      );
+      const querySnapshot = await getDocs(q);
+      const historyData = [];
+      querySnapshot.forEach((doc) => {
+        historyData.push({ id: doc.id, ...doc.data() });
+      });
+      setHistory(historyData);
+    } catch (error) {
+      console.error("Error fetching history:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleNewDonationChange = (e) => {
+    setNewDonation({ ...newDonation, [e.target.name]: e.target.value });
+  };
+
+  const handleAddHistory = async (e) => {
+    e.preventDefault();
+    if (!newDonation.date) return;
+
+    try {
+      await addDoc(collection(db, 'donations'), {
+        ...newDonation,
+        userId: user.uid,
+        createdAt: new Date().toISOString()
+      });
+
+      // Update lastDonationDate if this is the newest
+      if (!formData.lastDonationDate || newDonation.date > formData.lastDonationDate) {
+        await setDoc(doc(db, 'donors', user.uid), {
+          ...formData,
+          lastDonationDate: newDonation.date,
+          updatedAt: new Date().toISOString()
+        }, { merge: true });
+        setFormData(prev => ({ ...prev, lastDonationDate: newDonation.date }));
+      }
+
+      setNewDonation({ date: '', hospital: '' });
+      fetchHistory();
+      setStatus({ type: 'success', message: t.history.success });
+      setTimeout(() => setStatus({ type: '', message: '' }), 3000);
+    } catch (error) {
+      console.error("Error adding history:", error);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -74,18 +133,18 @@ const Profile = () => {
   if (loading) return <div className="container"><p>{t.common.loading}</p></div>;
 
   return (
-    <div className={`${styles.register} container`}>
-      <form onSubmit={handleSubmit} className={styles.form}>
+    <div className={`${profileStyles.profile} container`}>
+      <form onSubmit={handleSubmit} className={registerStyles.form}>
         <h2>{lang === 'ml' ? 'പ്രൊഫൈൽ' : 'Profile'}</h2>
         
         {isNewDonor && (
           <div style={{
-            backgroundColor: 'var(--primary-light)', 
+            backgroundColor: '#fee2e2', 
             padding: '1rem', 
             borderRadius: '8px', 
             marginBottom: '1.5rem',
             fontSize: '0.9rem',
-            color: 'var(--primary)',
+            color: '#dc2626',
             fontWeight: '600',
             textAlign: 'center'
           }}>
@@ -95,7 +154,7 @@ const Profile = () => {
           </div>
         )}
         
-        <div className={styles.field}>
+        <div className={registerStyles.field}>
           <label><User size={16} /> {t.form.name}</label>
           <input 
             type="text" 
@@ -106,7 +165,7 @@ const Profile = () => {
           />
         </div>
 
-        <div className={styles.field}>
+        <div className={registerStyles.field}>
           <label>🩸 {t.form.bloodGroup}</label>
           <select 
             name="bloodGroup" 
@@ -121,7 +180,7 @@ const Profile = () => {
           </select>
         </div>
 
-        <div className={styles.field}>
+        <div className={registerStyles.field}>
           <label><MapPin size={16} /> {t.form.location}</label>
           <input 
             type="text" 
@@ -132,7 +191,7 @@ const Profile = () => {
           />
         </div>
 
-        <div className={styles.field}>
+        <div className={registerStyles.field}>
           <label><MapPin size={16} /> {t.form.address}</label>
           <textarea 
             name="address" 
@@ -142,7 +201,7 @@ const Profile = () => {
           />
         </div>
 
-        <div className={styles.field}>
+        <div className={registerStyles.field}>
           <label>💊 {t.form.medicalConditions}</label>
           <select 
             name="hasMedicalConditions" 
@@ -155,7 +214,7 @@ const Profile = () => {
           </select>
         </div>
 
-        <div className={styles.field}>
+        <div className={registerStyles.field}>
           <label><Phone size={16} /> {t.form.phone}</label>
           <input 
             type="tel" 
@@ -166,7 +225,7 @@ const Profile = () => {
           />
         </div>
 
-        <div className={styles.field}>
+        <div className={registerStyles.field}>
           <label><MessageCircle size={16} /> {t.form.whatsapp}</label>
           <input 
             type="tel" 
@@ -177,7 +236,7 @@ const Profile = () => {
           />
         </div>
 
-        <div className={styles.field}>
+        <div className={registerStyles.field}>
           <label>📅 {t.form.lastDonation}</label>
           <input 
             type="date" 
@@ -187,14 +246,59 @@ const Profile = () => {
           />
         </div>
 
-        <button type="submit" className={styles.submitBtn}>
+        <button type="submit" className={registerStyles.submitBtn}>
           <Save size={20} /> {lang === 'ml' ? 'മാറ്റങ്ങൾ സേവ് ചെയ്യുക' : 'Save Changes'}
         </button>
 
         {status.message && (
-          <p className={styles[status.type]}>{status.message}</p>
+          <p className={registerStyles[status.type]}>{status.message}</p>
         )}
       </form>
+
+      <div className={profileStyles.historySection}>
+        <h3><History size={20} /> {t.history.title}</h3>
+        
+        <form onSubmit={handleAddHistory} className={profileStyles.addHistoryForm}>
+          <div>
+            <label>{t.history.date}</label>
+            <input 
+              type="date" 
+              name="date" 
+              value={newDonation.date} 
+              onChange={handleNewDonationChange} 
+              required 
+            />
+          </div>
+          <div>
+            <label>{t.history.hospital}</label>
+            <input 
+              type="text" 
+              name="hospital" 
+              value={newDonation.hospital} 
+              onChange={handleNewDonationChange} 
+              placeholder="Hospital name..."
+            />
+          </div>
+          <button type="submit" className={profileStyles.addBtn}>
+            <Plus size={18} /> {t.history.addBtn}
+          </button>
+        </form>
+
+        <div className={profileStyles.historyList}>
+          {history.length > 0 ? (
+            history.map(item => (
+              <div key={item.id} className={profileStyles.historyItem}>
+                <div className={profileStyles.historyInfo}>
+                  <h4>{new Date(item.date).toLocaleDateString()}</h4>
+                  {item.hospital && <p>{item.hospital}</p>}
+                </div>
+              </div>
+            ))
+          ) : (
+            <p className={profileStyles.noHistory}>{t.history.noHistory}</p>
+          )}
+        </div>
+      </div>
     </div>
   );
 };

@@ -46,6 +46,14 @@
   color: var(--primary) !important;
 }
 
+.adminLink {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: #dc2626 !important;
+  font-weight: 700;
+}
+
 .actions {
   display: flex;
   align-items: center;
