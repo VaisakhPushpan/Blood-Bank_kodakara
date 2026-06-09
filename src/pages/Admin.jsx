@@ -4,7 +4,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { translations, bloodGroups } from '../utils/translations';
 import { db } from '../firebase/config';
 import { collection, query, where, getDocs, addDoc, deleteDoc, doc, onSnapshot, orderBy } from 'firebase/firestore';
-import { AlertTriangle, Users, BarChart3, Trash2, Plus } from 'lucide-react';
+import { AlertTriangle, Users, BarChart3, Trash2, Plus, Search, X, Phone, MessageCircle, Heart, User } from 'lucide-react';
 import styles from '../styles/pages/Admin.module.css';
 
 const Admin = () => {
@@ -12,14 +12,13 @@ const Admin = () => {
   const { lang } = useLanguage();
   const t = translations[lang];
 
-  const [stats, setStats] = useState({});
+  const [donors, setDonors] = useState([]);
+  const [stats, setStats] = useState({ total: 0, available: 0, unavailable: 0, byGroup: {} });
   const [alerts, setAlerts] = useState([]);
-  const [newAlert, setNewAlert] = useState({
-    bloodGroup: '',
-    hospital: '',
-    contactName: '',
-    contactPhone: '',
-  });
+  const [newAlert, setNewAlert] = useState({ bloodGroup: '', hospital: '', contactName: '', contactPhone: '' });
+  
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedDonor, setSelectedDonor] = useState(null);
   
   const [loginData, setLoginData] = useState({ email: '', password: '' });
   const [loginError, setLoginError] = useState('');
@@ -28,7 +27,7 @@ const Admin = () => {
 
   useEffect(() => {
     if (isAdmin) {
-      fetchStats();
+      fetchData();
       const unsubscribeAlerts = onSnapshot(
         query(collection(db, 'alerts'), orderBy('createdAt', 'desc')),
         (snapshot) => {
@@ -42,42 +41,57 @@ const Admin = () => {
     }
   }, [isAdmin]);
 
-  const fetchStats = async () => {
+  const checkAvailability = (lastDate, hasMedicalConditions) => {
+    if (hasMedicalConditions === 'yes') return { available: false, reason: 'medical' };
+    if (!lastDate) return { available: true };
+    const last = new Date(lastDate);
+    const now = new Date();
+    const diffDays = Math.ceil(Math.abs(now - last) / (1000 * 60 * 60 * 24));
+    const COOLDOWN_DAYS = 90;
+    return diffDays >= COOLDOWN_DAYS ? { available: true } : { available: false, reason: 'cooldown' };
+  };
+
+  const fetchData = async () => {
     try {
       const donorsSnap = await getDocs(collection(db, 'donors'));
-      const counts = {};
-      bloodGroups.forEach(bg => counts[bg] = 0);
+      const donorsData = [];
+      const groupCounts = {};
+      bloodGroups.forEach(bg => groupCounts[bg] = 0);
+      
+      let avail = 0;
+      let unavail = 0;
+
       donorsSnap.forEach(doc => {
-        const bg = doc.data().bloodGroup;
-        if (counts[bg] !== undefined) counts[bg]++;
+        const data = { id: doc.id, ...doc.data() };
+        const availability = checkAvailability(data.lastDonationDate, data.hasMedicalConditions);
+        data.status = availability;
+        
+        donorsData.push(data);
+        if (groupCounts[data.bloodGroup] !== undefined) groupCounts[data.bloodGroup]++;
+        if (availability.available) avail++; else unavail++;
       });
-      setStats(counts);
+
+      setDonors(donorsData);
+      setStats({
+        total: donorsData.length,
+        available: avail,
+        unavailable: unavail,
+        byGroup: groupCounts
+      });
       setLoading(false);
     } catch (error) {
-      console.error("Error fetching stats:", error);
+      console.error("Error fetching data:", error);
     }
-  };
-
-  const handleAlertChange = (e) => {
-    setNewAlert({ ...newAlert, [e.target.name]: e.target.value });
-  };
-
-  const handleLoginChange = (e) => {
-    setLoginData({ ...loginData, [e.target.name]: e.target.value });
   };
 
   const handleAdminLogin = async (e) => {
     e.preventDefault();
     setLoginError('');
     setIsLoggingIn(true);
-    
     try {
       const result = await loginWithEmail(loginData.email, loginData.password);
-      if (!result.success) {
-        setLoginError(result.error || (lang === 'ml' ? 'ലോഗിൻ പരാജയപ്പെട്ടു.' : 'Login failed.'));
-      }
+      if (!result.success) setLoginError(result.error);
     } catch (err) {
-      console.error("Login component error:", err);
       setLoginError(err.message);
     } finally {
       setIsLoggingIn(false);
@@ -107,6 +121,11 @@ const Admin = () => {
     }
   };
 
+  const filteredDonors = donors.filter(d => 
+    d.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    d.location.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   if (loading) return <div className="container"><p>{t.common.loading}</p></div>;
 
   if (!isAdmin) {
@@ -115,30 +134,10 @@ const Admin = () => {
         <div className={styles.loginBox}>
           <h2>{lang === 'ml' ? 'അഡ്മിൻ ലോഗിൻ' : 'Admin Login'}</h2>
           <form onSubmit={handleAdminLogin}>
-            <div className={styles.field}>
-              <label>{lang === 'ml' ? 'ഇമെയിൽ' : 'Email Address'}</label>
-              <input 
-                type="email" 
-                name="email" 
-                value={loginData.email} 
-                onChange={handleLoginChange} 
-                required 
-              />
-            </div>
-            <div className={styles.field}>
-              <label>{lang === 'ml' ? 'പാസ്‌വേഡ്' : 'Password'}</label>
-              <input 
-                type="password" 
-                name="password" 
-                value={loginData.password} 
-                onChange={handleLoginChange} 
-                required 
-              />
-            </div>
+            <div className={styles.field}><label>Email</label><input type="email" name="email" value={loginData.email} onChange={(e) => setLoginData({...loginData, email: e.target.value})} required /></div>
+            <div className={styles.field}><label>Password</label><input type="password" name="password" value={loginData.password} onChange={(e) => setLoginData({...loginData, password: e.target.value})} required /></div>
             {loginError && <p className={styles.error}>{loginError}</p>}
-            <button type="submit" className={styles.submitBtn} disabled={isLoggingIn}>
-              {isLoggingIn ? (lang === 'ml' ? 'ലോഗിൻ ചെയ്യുന്നു...' : 'Logging in...') : (lang === 'ml' ? 'ലോഗിൻ ചെയ്യുക' : 'Login')}
-            </button>
+            <button type="submit" className={styles.submitBtn} disabled={isLoggingIn}>{isLoggingIn ? '...' : 'Login'}</button>
           </form>
         </div>
       </div>
@@ -149,59 +148,110 @@ const Admin = () => {
     <div className={`${styles.admin} container`}>
       <h1>{t.admin.title}</h1>
 
+      <div className={styles.summaryGrid}>
+        <div className={`${styles.summaryCard} ${styles.blue}`}>
+          <div className={styles.iconWrapper}><Users size={24} /></div>
+          <div><h4>{t.admin.totalDonors}</h4><p>{stats.total}</p></div>
+        </div>
+        <div className={`${styles.summaryCard} ${styles.green}`}>
+          <div className={styles.iconWrapper}><Users size={24} /></div>
+          <div><h4>{t.admin.availableDonors}</h4><p>{stats.available}</p></div>
+        </div>
+        <div className={`${styles.summaryCard} ${styles.red}`}>
+          <div className={styles.iconWrapper}><Users size={24} /></div>
+          <div><h4>{t.admin.unavailableDonors}</h4><p>{stats.unavailable}</p></div>
+        </div>
+      </div>
+
       <section className={styles.section}>
         <h3><BarChart3 size={20} /> {t.admin.donorStats}</h3>
         <div className={styles.statsGrid}>
           {bloodGroups.map(bg => (
-            <div key={bg} className={styles.statCard}>
-              <h4>{bg}</h4>
-              <p>{stats[bg] || 0}</p>
-            </div>
+            <div key={bg} className={styles.statCard}><h4>{bg}</h4><p>{stats.byGroup[bg] || 0}</p></div>
           ))}
+        </div>
+      </section>
+
+      <section className={styles.section}>
+        <h3><Users size={20} /> {t.admin.donorList}</h3>
+        <div className={styles.searchBar}>
+          <Search className={styles.searchIcon} size={20} />
+          <input type="text" placeholder={t.admin.searchPlaceholder} value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+        </div>
+        <div className={styles.tableContainer}>
+          <table className={styles.donorTable}>
+            <thead>
+              <tr>
+                <th>{t.form.name}</th>
+                <th>{t.form.bloodGroup}</th>
+                <th>{t.form.location}</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredDonors.map(donor => (
+                <tr key={donor.id}>
+                  <td>{donor.name}</td>
+                  <td><strong>{donor.bloodGroup}</strong></td>
+                  <td>{donor.location}</td>
+                  <td>
+                    <span className={`${styles.statusBadge} ${donor.status.available ? styles.available : (donor.status.reason === 'medical' ? styles.medical : styles.cooldown)}`}>
+                      {donor.status.available ? t.form.availability.available : (donor.status.reason === 'medical' ? t.admin.medicalReason : t.admin.cooldownReason)}
+                    </span>
+                  </td>
+                  <td><button className={styles.viewBtn} onClick={() => setSelectedDonor(donor)}>{t.admin.viewDetails}</button></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </section>
 
       <section className={styles.section}>
         <h3><AlertTriangle size={20} /> {t.admin.manageAlerts}</h3>
-        
         <form onSubmit={handleAddAlert} className={styles.alertForm}>
-          <div className={styles.field}>
-            <label>{t.form.bloodGroup}</label>
-            <select name="bloodGroup" value={newAlert.bloodGroup} onChange={handleAlertChange} required>
-              <option value="">Select</option>
-              {bloodGroups.map(bg => <option key={bg} value={bg}>{bg}</option>)}
-            </select>
-          </div>
-          <div className={styles.field}>
-            <label>{t.urgentAlerts.hospital}</label>
-            <input type="text" name="hospital" value={newAlert.hospital} onChange={handleAlertChange} required />
-          </div>
-          <div className={styles.field}>
-            <label>{t.form.name}</label>
-            <input type="text" name="contactName" value={newAlert.contactName} onChange={handleAlertChange} required />
-          </div>
-          <div className={styles.field}>
-            <label>{t.form.phone}</label>
-            <input type="tel" name="contactPhone" value={newAlert.contactPhone} onChange={handleAlertChange} required />
-          </div>
-          <button type="submit" className={styles.submitBtn}>
-            <Plus size={18} /> {t.admin.addAlert}
-          </button>
+          <div className={styles.field}><label>{t.form.bloodGroup}</label><select name="bloodGroup" value={newAlert.bloodGroup} onChange={(e) => setNewAlert({...newAlert, bloodGroup: e.target.value})} required><option value="">Select</option>{bloodGroups.map(bg => <option key={bg} value={bg}>{bg}</option>)}</select></div>
+          <div className={styles.field}><label>{t.urgentAlerts.hospital}</label><input type="text" value={newAlert.hospital} onChange={(e) => setNewAlert({...newAlert, hospital: e.target.value})} required /></div>
+          <div className={styles.field}><label>{t.form.name}</label><input type="text" value={newAlert.contactName} onChange={(e) => setNewAlert({...newAlert, contactName: e.target.value})} required /></div>
+          <div className={styles.field}><label>{t.form.phone}</label><input type="tel" value={newAlert.contactPhone} onChange={(e) => setNewAlert({...newAlert, contactPhone: e.target.value})} required /></div>
+          <button type="submit" className={styles.submitBtn}>{t.admin.addAlert}</button>
         </form>
-
         <div className={styles.alertsList}>
           {alerts.map(alert => (
             <div key={alert.id} className={styles.alertItem}>
-              <div>
-                <strong>{alert.bloodGroup}</strong> - {alert.hospital} ({alert.contactName})
-              </div>
-              <button onClick={() => handleDeleteAlert(alert.id)} className={styles.deleteBtn}>
-                <Trash2 size={18} />
-              </button>
+              <div><strong>{alert.bloodGroup}</strong> - {alert.hospital} ({alert.contactName})</div>
+              <button onClick={() => handleDeleteAlert(alert.id)} className={styles.deleteBtn}><Trash2 size={18} /></button>
             </div>
           ))}
         </div>
       </section>
+
+      {selectedDonor && (
+        <div className={styles.modalOverlay} onClick={() => setSelectedDonor(null)}>
+          <div className={styles.modal} onClick={e => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <h2>{selectedDonor.name}</h2>
+              <button className={styles.closeBtn} onClick={() => setSelectedDonor(null)}><X size={24} /></button>
+            </div>
+            <div className={styles.modalContent}>
+              <div className={styles.infoGrid}>
+                <div className={styles.infoItem}><label>{t.form.bloodGroup}</label><p>{selectedDonor.bloodGroup}</p></div>
+                <div className={styles.infoItem}><label>{t.form.location}</label><p>{selectedDonor.location}</p></div>
+                <div className={styles.infoItem}><label>{t.form.phone}</label><p>{selectedDonor.phone}</p></div>
+                <div className={styles.infoItem}><label>{t.form.whatsapp}</label><p>{selectedDonor.whatsapp}</p></div>
+                <div className={styles.infoItem}><label>{t.form.lastDonation}</label><p>{selectedDonor.lastDonationDate || 'N/A'}</p></div>
+                <div className={styles.infoItem}><label>{t.form.medicalConditions}</label><p>{selectedDonor.hasMedicalConditions === 'yes' ? t.form.yes : t.form.no}</p></div>
+                <div className={styles.infoItem} style={{gridColumn: '1/-1'}}><label>{t.form.address}</label><p>{selectedDonor.address}</p></div>
+              </div>
+              <div className={styles.contactLinks}>
+                <a href={`tel:${selectedDonor.phone}`} className={`${styles.modalActionBtn} ${styles.call}`}><Phone size={18} /> {t.find.call}</a>
+                <a href={`https://wa.me/${selectedDonor.whatsapp}`} target="_blank" rel="noopener noreferrer" className={`${styles.modalActionBtn} ${styles.whatsapp}`}><MessageCircle size={18} /> {t.find.whatsapp}</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

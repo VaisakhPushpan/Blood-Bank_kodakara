@@ -134,10 +134,209 @@
   color: #1a1a1a;
 }
 
-.error {
-  color: #dc2626;
-  font-size: 0.9rem;
-  margin-top: 0.5rem;
-  font-weight: 500;
-  text-align: center;
+.summaryGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
 }
+
+.summaryCard {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  border: 1px solid #e5e7eb;
+}
+
+.summaryCard div h4 {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #6b7280;
+  text-transform: uppercase;
+}
+
+.summaryCard div p {
+  margin: 0.2rem 0 0 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.summaryCard.blue .iconWrapper { background: #eff6ff; color: #3b82f6; }
+.summaryCard.green .iconWrapper { background: #f0fdf4; color: #22c55e; }
+.summaryCard.red .iconWrapper { background: #fef2f2; color: #dc2626; }
+
+.iconWrapper {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.searchBar {
+  margin-bottom: 1.5rem;
+  position: relative;
+}
+
+.searchBar input {
+  width: 100%;
+  padding: 0.75rem 1rem 0.75rem 2.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9ca3af;
+}
+
+.tableContainer {
+  overflow-x: auto;
+}
+
+.donorTable {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.donorTable th, .donorTable td {
+  padding: 1rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.donorTable th {
+  background: #f9fafb;
+  font-weight: 600;
+  color: #4b5563;
+  font-size: 0.9rem;
+}
+
+.donorTable tr:hover {
+  background: #f9fafb;
+}
+
+.statusBadge {
+  padding: 0.25rem 0.6rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.statusBadge.available { background: #dcfce7; color: #166534; }
+.statusBadge.cooldown { background: #fef9c3; color: #854d0e; }
+.statusBadge.medical { background: #fee2e2; color: #991b1b; }
+
+.viewBtn {
+  background: none;
+  border: none;
+  color: #3b82f6;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+/* Modal Styles */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+  padding: 1rem;
+}
+
+.modal {
+  background: white;
+  width: 100%;
+  max-width: 600px;
+  border-radius: 16px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+}
+
+.modalHeader {
+  padding: 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modalHeader h2 { margin: 0; font-size: 1.25rem; }
+
+.closeBtn {
+  background: none;
+  border: none;
+  color: #6b7280;
+  cursor: pointer;
+}
+
+.modalContent {
+  padding: 1.5rem;
+}
+
+.infoGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.infoItem label {
+  display: block;
+  font-size: 0.8rem;
+  color: #6b7280;
+  text-transform: uppercase;
+  margin-bottom: 0.3rem;
+  font-weight: 600;
+}
+
+.infoItem p {
+  margin: 0;
+  font-weight: 600;
+  color: #1a1a1a;
+  word-break: break-all;
+}
+
+.contactLinks {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.modalActionBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.modalActionBtn.call { background: #eff6ff; color: #2563eb; }
+.modalActionBtn.whatsapp { background: #f0fdf4; color: #166534; }
+
+@media (max-width: 640px) {
+  .infoGrid { grid-template-columns: 1fr; }
+  .summaryGrid { grid-template-columns: 1fr; }
+}
+
