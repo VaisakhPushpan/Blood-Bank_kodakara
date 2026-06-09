@@ -23,6 +23,7 @@ const Admin = () => {
   
   const [loginData, setLoginData] = useState({ email: '', password: '' });
   const [loginError, setLoginError] = useState('');
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -68,9 +69,18 @@ const Admin = () => {
   const handleAdminLogin = async (e) => {
     e.preventDefault();
     setLoginError('');
-    const result = await loginWithEmail(loginData.email, loginData.password);
-    if (!result.success) {
-      setLoginError(lang === 'ml' ? 'ലോഗിൻ പരാജയപ്പെട്ടു. വിവരങ്ങൾ പരിശോധിക്കുക.' : 'Login failed. Please check your credentials.');
+    setIsLoggingIn(true);
+    
+    try {
+      const result = await loginWithEmail(loginData.email, loginData.password);
+      if (!result.success) {
+        setLoginError(result.error || (lang === 'ml' ? 'ലോഗിൻ പരാജയപ്പെട്ടു.' : 'Login failed.'));
+      }
+    } catch (err) {
+      console.error("Login component error:", err);
+      setLoginError(err.message);
+    } finally {
+      setIsLoggingIn(false);
     }
   };
 
@@ -126,8 +136,8 @@ const Admin = () => {
               />
             </div>
             {loginError && <p className={styles.error}>{loginError}</p>}
-            <button type="submit" className={styles.submitBtn}>
-              {lang === 'ml' ? 'ലോഗിൻ ചെയ്യുക' : 'Login'}
+            <button type="submit" className={styles.submitBtn} disabled={isLoggingIn}>
+              {isLoggingIn ? (lang === 'ml' ? 'ലോഗിൻ ചെയ്യുന്നു...' : 'Logging in...') : (lang === 'ml' ? 'ലോഗിൻ ചെയ്യുക' : 'Login')}
             </button>
           </form>
         </div>
