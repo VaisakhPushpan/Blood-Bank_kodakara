@@ -8,7 +8,7 @@ import { AlertTriangle, Users, BarChart3, Trash2, Plus } from 'lucide-react';
 import styles from '../styles/pages/Admin.module.css';
 
 const Admin = () => {
-  const { isAdmin, user } = useAuth();
+  const { isAdmin, user, loginWithEmail } = useAuth();
   const { lang } = useLanguage();
   const t = translations[lang];
 
@@ -20,6 +20,9 @@ const Admin = () => {
     contactName: '',
     contactPhone: '',
   });
+  
+  const [loginData, setLoginData] = useState({ email: '', password: '' });
+  const [loginError, setLoginError] = useState('');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -33,6 +36,8 @@ const Admin = () => {
         }
       );
       return () => unsubscribeAlerts();
+    } else {
+      setLoading(false);
     }
   }, [isAdmin]);
 
@@ -54,6 +59,19 @@ const Admin = () => {
 
   const handleAlertChange = (e) => {
     setNewAlert({ ...newAlert, [e.target.name]: e.target.value });
+  };
+
+  const handleLoginChange = (e) => {
+    setLoginData({ ...loginData, [e.target.name]: e.target.value });
+  };
+
+  const handleAdminLogin = async (e) => {
+    e.preventDefault();
+    setLoginError('');
+    const result = await loginWithEmail(loginData.email, loginData.password);
+    if (!result.success) {
+      setLoginError(lang === 'ml' ? 'ലോഗിൻ പരാജയപ്പെട്ടു. വിവരങ്ങൾ പരിശോധിക്കുക.' : 'Login failed. Please check your credentials.');
+    }
   };
 
   const handleAddAlert = async (e) => {
@@ -79,11 +97,40 @@ const Admin = () => {
     }
   };
 
+  if (loading) return <div className="container"><p>{t.common.loading}</p></div>;
+
   if (!isAdmin) {
     return (
-      <div className="container" style={{ padding: '4rem 0', textAlign: 'center' }}>
-        <h2>Access Denied</h2>
-        <p>You do not have permission to view this page.</p>
+      <div className={`${styles.loginContainer} container`}>
+        <div className={styles.loginBox}>
+          <h2>{lang === 'ml' ? 'അഡ്മിൻ ലോഗിൻ' : 'Admin Login'}</h2>
+          <form onSubmit={handleAdminLogin}>
+            <div className={styles.field}>
+              <label>{lang === 'ml' ? 'ഇമെയിൽ' : 'Email Address'}</label>
+              <input 
+                type="email" 
+                name="email" 
+                value={loginData.email} 
+                onChange={handleLoginChange} 
+                required 
+              />
+            </div>
+            <div className={styles.field}>
+              <label>{lang === 'ml' ? 'പാസ്‌വേഡ്' : 'Password'}</label>
+              <input 
+                type="password" 
+                name="password" 
+                value={loginData.password} 
+                onChange={handleLoginChange} 
+                required 
+              />
+            </div>
+            {loginError && <p className={styles.error}>{loginError}</p>}
+            <button type="submit" className={styles.submitBtn}>
+              {lang === 'ml' ? 'ലോഗിൻ ചെയ്യുക' : 'Login'}
+            </button>
+          </form>
+        </div>
       </div>
     );
   }

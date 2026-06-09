@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { auth, db } from '../firebase/config';
-import { onAuthStateChanged, signInWithPopup, signOut } from 'firebase/auth';
+import { onAuthStateChanged, signInWithPopup, signOut, signInWithEmailAndPassword } from 'firebase/auth';
 import { googleProvider } from '../firebase/config';
 import { doc, getDoc } from 'firebase/firestore';
 
@@ -45,10 +45,22 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const loginWithEmail = async (email, password) => {
+    try {
+      const result = await signInWithEmailAndPassword(auth, email, password);
+      const adminSnap = await getDoc(doc(db, 'admins', result.user.uid));
+      setIsAdmin(adminSnap.exists());
+      return { success: true };
+    } catch (error) {
+      console.error("Email login failed", error);
+      return { success: false, error: error.message };
+    }
+  };
+
   const logout = () => signOut(auth);
 
   return (
-    <AuthContext.Provider value={{ user, isDonor, isAdmin, loading, loginWithGoogle, logout }}>
+    <AuthContext.Provider value={{ user, isDonor, isAdmin, loading, loginWithGoogle, loginWithEmail, logout }}>
       {!loading && children}
     </AuthContext.Provider>
   );
