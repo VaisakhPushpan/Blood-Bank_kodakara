@@ -17,6 +17,7 @@ const Register = () => {
   const [formData, setFormData] = useState({
     name: user?.displayName || '',
     bloodGroup: '',
+    location: '',
     address: '',
     phone: '',
     whatsapp: '',
@@ -47,6 +48,11 @@ const Register = () => {
     setChecking(false);
   };
 
+  const toTitleCase = (str) => {
+    if (!str) return '';
+    return str.trim().toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+  };
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -58,12 +64,15 @@ const Register = () => {
     setStatus({ type: 'loading', message: t.common.loading });
 
     try {
-      await setDoc(doc(db, 'donors', user.uid), {
+      const normalizedData = {
         ...formData,
+        location: toTitleCase(formData.location),
         userId: user.uid,
         email: user.email,
         updatedAt: new Date().toISOString(),
-      });
+      };
+
+      await setDoc(doc(db, 'donors', user.uid), normalizedData);
       setStatus({ type: 'success', message: t.form.success });
     } catch (error) {
       console.error(error);

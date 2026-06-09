@@ -81,6 +81,11 @@ const Profile = () => {
     setNewDonation({ ...newDonation, [e.target.name]: e.target.value });
   };
 
+  const toTitleCase = (str) => {
+    if (!str) return '';
+    return str.trim().toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+  };
+
   const handleAddHistory = async (e) => {
     e.preventDefault();
     if (!newDonation.date) return;
@@ -96,10 +101,11 @@ const Profile = () => {
       if (!formData.lastDonationDate || newDonation.date > formData.lastDonationDate) {
         await setDoc(doc(db, 'donors', user.uid), {
           ...formData,
+          location: toTitleCase(formData.location),
           lastDonationDate: newDonation.date,
           updatedAt: new Date().toISOString()
         }, { merge: true });
-        setFormData(prev => ({ ...prev, lastDonationDate: newDonation.date }));
+        setFormData(prev => ({ ...prev, lastDonationDate: newDonation.date, location: toTitleCase(formData.location) }));
       }
 
       setNewDonation({ date: '', hospital: '' });
@@ -116,13 +122,17 @@ const Profile = () => {
     setStatus({ type: 'loading', message: t.common.loading });
 
     try {
-      await setDoc(doc(db, 'donors', user.uid), {
+      const normalizedData = {
         ...formData,
+        location: toTitleCase(formData.location),
         userId: user.uid,
         email: user.email,
         updatedAt: new Date().toISOString(),
-      });
+      };
+
+      await setDoc(doc(db, 'donors', user.uid), normalizedData);
       setStatus({ type: 'success', message: t.form.success });
+      setFormData(normalizedData);
       setTimeout(() => setStatus({ type: '', message: '' }), 3000);
     } catch (error) {
       console.error(error);

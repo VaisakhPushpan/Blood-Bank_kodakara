@@ -42,8 +42,14 @@ const FindDonor = () => {
     setLoading(false);
   };
 
+  const toTitleCase = (str) => {
+    if (!str) return '';
+    return str.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+  };
+
   const getUniqueLocations = () => {
-    return [...new Set(donors.map(d => d.location))];
+    const normalizedLocations = donors.map(d => toTitleCase(d.location));
+    return [...new Set(normalizedLocations)].sort();
   };
 
   const checkAvailability = (lastDate, hasMedicalConditions) => {
@@ -66,7 +72,7 @@ const FindDonor = () => {
 
   const filteredDonors = donors.filter(donor => {
     const availability = checkAvailability(donor.lastDonationDate, donor.hasMedicalConditions);
-    const matchesLocation = selectedLocation === '' || donor.location === selectedLocation;
+    const matchesLocation = selectedLocation === '' || toTitleCase(donor.location) === selectedLocation;
     const matchesAvailability = !showOnlyAvailable || availability.available;
     return matchesLocation && matchesAvailability;
   });
