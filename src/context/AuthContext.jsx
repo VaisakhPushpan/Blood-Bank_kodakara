@@ -16,13 +16,16 @@ export const AuthProvider = ({ children }) => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
       if (currentUser) {
+        console.log("User logged in, UID:", currentUser.uid);
         // Check donor status
         const donorSnap = await getDoc(doc(db, 'donors', currentUser.uid));
         setIsDonor(donorSnap.exists());
         
         // Check admin status
         const adminSnap = await getDoc(doc(db, 'admins', currentUser.uid));
-        setIsAdmin(adminSnap.exists());
+        const isAdminUser = adminSnap.exists();
+        console.log("Is Admin Doc found:", isAdminUser);
+        setIsAdmin(isAdminUser);
       } else {
         setIsDonor(false);
         setIsAdmin(false);
@@ -48,9 +51,20 @@ export const AuthProvider = ({ children }) => {
   const loginWithEmail = async (email, password) => {
     try {
       const result = await signInWithEmailAndPassword(auth, email, password);
+      console.log("Email login success for UID:", result.user.uid);
+      
       const adminSnap = await getDoc(doc(db, 'admins', result.user.uid));
-      setIsAdmin(adminSnap.exists());
-      return { success: true };
+      if (adminSnap.exists()) {
+        setIsAdmin(true);
+        return { success: true };
+      } else {
+        console.warn("User logged in but is NOT in 'admins' collection");
+        setIsAdmin(false);
+        return { 
+          success: false, 
+          error: "You are not authorized as an admin. Please check if your UID is correctly added to the 'admins' collection in Firestore." 
+        };
+      }
     } catch (error) {
       console.error("Email login failed", error);
       return { success: false, error: error.message };
