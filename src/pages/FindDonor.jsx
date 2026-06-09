@@ -65,7 +65,7 @@ const FindDonor = () => {
   };
 
   const filteredDonors = donors.filter(donor => {
-    const availability = checkAvailability(donor.lastDonationDate);
+    const availability = checkAvailability(donor.lastDonationDate, donor.hasMedicalConditions);
     const matchesLocation = selectedLocation === '' || donor.location === selectedLocation;
     const matchesAvailability = !showOnlyAvailable || availability.available;
     return matchesLocation && matchesAvailability;
