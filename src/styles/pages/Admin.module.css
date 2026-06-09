@@ -2,6 +2,37 @@
   padding: 2rem 0;
 }
 
+.headerRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.headerRow h1 {
+  margin: 0;
+}
+
+.logoutBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: white;
+  border: 1px solid #d1d5db;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  font-weight: 600;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.logoutBtn:hover {
+  background: #fef2f2;
+  color: #dc2626;
+  border-color: #fee2e2;
+}
+
 .statsGrid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));

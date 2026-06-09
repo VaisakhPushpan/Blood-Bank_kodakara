@@ -4,11 +4,11 @@ import { useLanguage } from '../context/LanguageContext';
 import { translations, bloodGroups } from '../utils/translations';
 import { db } from '../firebase/config';
 import { collection, query, where, getDocs, addDoc, deleteDoc, doc, onSnapshot, orderBy } from 'firebase/firestore';
-import { AlertTriangle, Users, BarChart3, Trash2, Plus, Search, X, Phone, MessageCircle, Heart, User } from 'lucide-react';
+import { AlertTriangle, Users, BarChart3, Trash2, Plus, Search, X, Phone, MessageCircle, Heart, User, LogOut } from 'lucide-react';
 import styles from '../styles/pages/Admin.module.css';
 
 const Admin = () => {
-  const { isAdmin, user, loginWithEmail } = useAuth();
+  const { isAdmin, user, loginWithEmail, logout } = useAuth();
   const { lang } = useLanguage();
   const t = translations[lang];
 
@@ -121,6 +121,12 @@ const Admin = () => {
     }
   };
 
+  const handleLogout = () => {
+    if (window.confirm(lang === 'ml' ? 'നിങ്ങൾക്ക് ലോഗൗട്ട് ചെയ്യണോ?' : 'Are you sure you want to logout?')) {
+      logout();
+    }
+  };
+
   const filteredDonors = donors.filter(d => 
     d.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
     d.location.toLowerCase().includes(searchTerm.toLowerCase())
@@ -146,7 +152,13 @@ const Admin = () => {
 
   return (
     <div className={`${styles.admin} container`}>
-      <h1>{t.admin.title}</h1>
+      <div className={styles.headerRow}>
+        <h1>{t.admin.title}</h1>
+        <button onClick={handleLogout} className={styles.logoutBtn}>
+          <LogOut size={18} />
+          {lang === 'ml' ? 'ലോഗൗട്ട്' : 'Logout'}
+        </button>
+      </div>
 
       <div className={styles.summaryGrid}>
         <div className={`${styles.summaryCard} ${styles.blue}`}>
