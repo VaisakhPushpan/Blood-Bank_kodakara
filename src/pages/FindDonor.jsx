@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { translations, bloodGroups } from '../utils/translations';
 import { db } from '../firebase/config';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { collection, query, getDocs } from 'firebase/firestore';
 import styles from '../styles/pages/FindDonor.module.css';
 import { Phone, MessageCircle, Clock, CheckCircle2 } from 'lucide-react';
 
@@ -17,19 +17,13 @@ const FindDonor = () => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (selectedGroup) {
-      fetchDonors();
-    }
-  }, [selectedGroup]);
+    fetchDonors();
+  }, []);
 
   const fetchDonors = async () => {
     setLoading(true);
-    setDonors([]);
     try {
-      const q = query(
-        collection(db, 'donors'),
-        where('bloodGroup', '==', selectedGroup)
-      );
+      const q = query(collection(db, 'donors'));
       const querySnapshot = await getDocs(q);
       const results = [];
       querySnapshot.forEach((doc) => {
@@ -48,7 +42,10 @@ const FindDonor = () => {
   };
 
   const getUniqueLocations = () => {
-    const normalizedLocations = donors.map(d => toTitleCase(d.location));
+    const relevantDonors = selectedGroup 
+      ? donors.filter(d => d.bloodGroup === selectedGroup)
+      : donors;
+    const normalizedLocations = relevantDonors.map(d => toTitleCase(d.location));
     return [...new Set(normalizedLocations)].sort();
   };
 
@@ -72,9 +69,10 @@ const FindDonor = () => {
 
   const filteredDonors = donors.filter(donor => {
     const availability = checkAvailability(donor.lastDonationDate, donor.hasMedicalConditions);
+    const matchesGroup = selectedGroup === '' || donor.bloodGroup === selectedGroup;
     const matchesLocation = selectedLocation === '' || toTitleCase(donor.location) === selectedLocation;
     const matchesAvailability = !showOnlyAvailable || availability.available;
-    return matchesLocation && matchesAvailability;
+    return matchesGroup && matchesLocation && matchesAvailability;
   });
 
   return (
@@ -82,15 +80,18 @@ const FindDonor = () => {
       <h2>{t.find.title}</h2>
 
       <div className={styles.filterGroup}>
-        <select value={selectedGroup} onChange={(e) => setSelectedGroup(e.target.value)}>
-          <option value="">{lang === 'ml' ? 'രക്തഗ്രൂപ്പ് തിരഞ്ഞെടുക്കുക' : 'Select Blood Group'}</option>
+        <select value={selectedGroup} onChange={(e) => {
+          setSelectedGroup(e.target.value);
+          setSelectedLocation(''); // Reset location when group changes
+        }}>
+          <option value="">{lang === 'ml' ? 'എല്ലാ രക്തഗ്രൂപ്പുകളും' : 'All Blood Groups'}</option>
           {bloodGroups.map(bg => <option key={bg} value={bg}>{bg}</option>)}
         </select>
 
         {donors.length > 0 && (
           <>
             <select value={selectedLocation} onChange={(e) => setSelectedLocation(e.target.value)}>
-              <option value="">{lang === 'ml' ? 'സ്ഥലം തിരഞ്ഞെടുക്കുക' : 'Select Location'}</option>
+              <option value="">{lang === 'ml' ? 'എല്ലാ സ്ഥലങ്ങളും' : 'All Locations'}</option>
               {getUniqueLocations().map(loc => <option key={loc} value={loc}>{loc}</option>)}
             </select>
 
@@ -154,9 +155,9 @@ const FindDonor = () => {
               </div>
             );
           })
-        ) : selectedGroup ? (
+        ) : (
           <p>{t.find.noResults}</p>
-        ) : null}
+        )}
       </div>
     </div>
   );
